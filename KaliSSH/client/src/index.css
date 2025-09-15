@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(210, 11%, 4%);
+  --foreground: hsl(213, 31%, 91%);
+  --card: hsl(210, 11%, 7%);
+  --card-foreground: hsl(213, 31%, 91%);
+  --popover: hsl(210, 11%, 7%);
+  --popover-foreground: hsl(213, 31%, 91%);
+  --primary: hsl(142, 70%, 45%);
+  --primary-foreground: hsl(210, 11%, 4%);
+  --secondary: hsl(210, 6%, 12%);
+  --secondary-foreground: hsl(213, 31%, 91%);
+  --muted: hsl(210, 6%, 12%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --accent: hsl(45, 93%, 47%);
+  --accent-foreground: hsl(210, 11%, 4%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(210, 6%, 16%);
+  --input: hsl(210, 6%, 16%);
+  --ring: hsl(142, 70%, 45%);
+  --chart-1: hsl(142, 70%, 45%);
+  --chart-2: hsl(159, 100%, 36%);
+  --chart-3: hsl(45, 93%, 47%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(210, 11%, 7%);
+  --sidebar-foreground: hsl(213, 31%, 91%);
+  --sidebar-primary: hsl(142, 70%, 45%);
+  --sidebar-primary-foreground: hsl(210, 11%, 4%);
+  --sidebar-accent: hsl(210, 6%, 12%);
+  --sidebar-accent-foreground: hsl(213, 31%, 91%);
+  --sidebar-border: hsl(210, 6%, 16%);
+  --sidebar-ring: hsl(142, 70%, 45%);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00), 0px 1px 2px -1px hsl(142, 70%, 45% / 0.00);
+  --shadow: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00), 0px 1px 2px -1px hsl(142, 70%, 45% / 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00), 0px 2px 4px -1px hsl(142, 70%, 45% / 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00), 0px 4px 6px -1px hsl(142, 70%, 45% / 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00), 0px 8px 10px -1px hsl(142, 70%, 45% / 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(142, 70%, 45% / 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(210, 11%, 4%);
+  --foreground: hsl(213, 31%, 91%);
+  --card: hsl(210, 11%, 7%);
+  --card-foreground: hsl(213, 31%, 91%);
+  --popover: hsl(210, 11%, 7%);
+  --popover-foreground: hsl(213, 31%, 91%);
+  --primary: hsl(142, 70%, 45%);
+  --primary-foreground: hsl(210, 11%, 4%);
+  --secondary: hsl(210, 6%, 12%);
+  --secondary-foreground: hsl(213, 31%, 91%);
+  --muted: hsl(210, 6%, 12%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --accent: hsl(45, 93%, 47%);
+  --accent-foreground: hsl(210, 11%, 4%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(210, 6%, 16%);
+  --input: hsl(210, 6%, 16%);
+  --ring: hsl(142, 70%, 45%);
+  --chart-1: hsl(142, 70%, 45%);
+  --chart-2: hsl(159, 100%, 36%);
+  --chart-3: hsl(45, 93%, 47%);
+  --chart-4: hsl(147, 78%, 42%);
+  --chart-5: hsl(341, 75%, 51%);
+  --sidebar: hsl(210, 11%, 7%);
+  --sidebar-foreground: hsl(213, 31%, 91%);
+  --sidebar-primary: hsl(142, 70%, 45%);
+  --sidebar-primary-foreground: hsl(210, 11%, 4%);
+  --sidebar-accent: hsl(210, 6%, 12%);
+  --sidebar-accent-foreground: hsl(213, 31%, 91%);
+  --sidebar-border: hsl(210, 6%, 16%);
+  --sidebar-ring: hsl(142, 70%, 45%);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+.terminal-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.terminal-scrollbar::-webkit-scrollbar-track {
+  background: hsl(210, 6%, 12%);
+}
+.terminal-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(210, 6%, 20%);
+  border-radius: 4px;
+}
+.terminal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(210, 6%, 25%);
+}
+
+.typing-animation::after {
+  content: '▊';
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.pulse-green {
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
