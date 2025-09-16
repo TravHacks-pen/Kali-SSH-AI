@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.0",
+    "@types/react": "^19.1.13",
+    "@types/react-query": "^1.2.8",
+    "vite": "^7.1.5"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.87.4",
+    "express": "^5.1.0"
+  }
+}

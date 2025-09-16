@@ -88,25 +88,25 @@ export class SSHClient {
     }
 
     return new Promise((resolve, reject) => {
-      const sshProcess = spawn(this.SSH_COMMAND, [...this.SSH_ARGS, command], {
+      this.sshProcess = spawn(this.SSH_COMMAND, [...this.SSH_ARGS, command], {
         stdio: ["pipe", "pipe", "pipe"]
       });
 
       let output = "";
       let errorOutput = "";
 
-      sshProcess.stdout?.on("data", (data) => {
+      this.sshProcess.stdout?.on("data", (data) => {
         output += data.toString();
       });
 
-      sshProcess.stderr?.on("data", (data) => {
+      this.sshProcess.stderr?.on("data", (data) => {
         const stderr = data.toString();
         errorOutput += stderr;
       });
 
-      sshProcess.on("close", (code) => {
+      this.sshProcess.on("close", (code) => {
         const fullOutput = output + (errorOutput ? `\nSTDERR:\n${errorOutput}` : "");
-        
+        this.sshProcess = null;
         if (code === 0 || output.length > 0) {
           resolve(fullOutput || "Command executed successfully (no output)");
         } else {
@@ -114,17 +114,28 @@ export class SSHClient {
         }
       });
 
-      sshProcess.on("error", (error) => {
+      this.sshProcess.on("error", (error) => {
         console.error("SSH command execution error:", error);
+        this.sshProcess = null;
         reject(error);
       });
 
       // Timeout after 30 seconds
       setTimeout(() => {
-        sshProcess.kill();
+        if (this.sshProcess) {
+          this.sshProcess.kill();
+          this.sshProcess = null;
+        }
         reject(new Error("Command execution timeout"));
       }, 30000);
     });
+  }
+
+  cancelCurrentCommand(): void {
+    if (this.sshProcess) {
+      this.sshProcess.kill();
+      this.sshProcess = null;
+    }
   }
 
   isConnected(): boolean {

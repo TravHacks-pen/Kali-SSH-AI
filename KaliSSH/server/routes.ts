@@ -1,10 +1,12 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Express, Request, Response } from "express";
+import { createServer, Server } from "http";
 import { SmartMultiModelOrchestrator } from "./services/ai-orchestrator";
 import { SSHClient } from "./services/ssh-client";
 import { chatRequestSchema } from "@shared/schema";
+import { addCommandHistory, getCommandHistory, CommandHistoryEntry } from "./command-history";
 
-const API_KEY = process.env.OPENROUTER_API_KEY;
+// @ts-ignore
+const API_KEY = (typeof process !== 'undefined' && process.env.OPENROUTER_API_KEY) ? process.env.OPENROUTER_API_KEY : undefined;
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // Initialize services
@@ -12,8 +14,31 @@ const orchestrator = API_KEY ? new SmartMultiModelOrchestrator(API_KEY, API_URL)
 const sshClient = new SSHClient();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Real-time AI feedback during SSH execution (SSE)
+  app.get("/api/ssh/feedback", async (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    // Simulate streaming feedback (replace with real logic)
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      res.write(`data: AI feedback chunk ${count}\n\n`);
+      if (count >= 5) {
+        clearInterval(interval);
+        res.write("event: end\ndata: Execution complete\n\n");
+        res.end();
+      }
+    }, 2000);
+  });
+  // Cancel current SSH command
+  app.post("/api/ssh/cancel", (req: Request, res: Response) => {
+    sshClient.cancelCurrentCommand();
+    res.json({ success: true });
+  });
   // Chat endpoint - handles both regular chat and SSH commands
-  app.post("/api/chat", async (req, res) => {
+  app.post("/api/chat", async (req: Request, res: Response) => {
     try {
       if (!orchestrator) {
         return res.status(500).json({ error: "AI service not available - missing API key" });
@@ -30,8 +55,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let response: any;
       let sshOutput: string | null = null;
 
-      if (mode === "ssh") {
-        // Execute SSH command first
+      if (mode === "ssh_intent") {
+        // Step 1: Ask AI to generate the best command(s) for the user's intent
+        const aiPrompt = [
+          {
+            role: "system",
+            content: "You are a cybersecurity expert and Linux command generator. Given a user intent, generate the most effective and safe Kali Linux command(s) to achieve the goal. Respond ONLY with the command(s) in plain text, no explanation."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ];
+        const commandGen = await orchestrator.execute_mode("smart_consensus", aiPrompt);
+        const generatedCommands = commandGen.content.trim();
+
+        // Step 2: Execute the generated command(s) via SSH
+        let sshOutput: string | null = null;
+        try {
+          sshOutput = await sshClient.executeCommand(generatedCommands);
+        } catch (sshError) {
+          sshOutput = `SSH Error: ${sshError}`;
+        }
+
+        // Step 3: Get AI analysis of the command and output
+        const aiMessages = [
+          {
+            role: "system",
+            content: "You are a cybersecurity expert analyzing SSH command execution results from a Kali Linux machine. Provide detailed analysis and insights."
+          },
+          {
+            role: "user",
+            content: `Command executed: ${generatedCommands}\n\nOutput:\n${sshOutput}\n\nPlease analyze this output and provide security insights.`
+          }
+        ];
+        response = await orchestrator.execute_mode("smart_consensus", aiMessages);
+        // Attach generated commands and output to metadata
+        response.metadata = {
+          ...response.metadata,
+          generated_commands: generatedCommands,
+          command_output: sshOutput
+        };
+
+        // Log to command history
+        addCommandHistory({
+          timestamp: new Date(),
+          intent: message,
+          generatedCommands,
+          output: sshOutput || "",
+          analysis: response.content
+        });
+  // Endpoint to get command history
+  app.get("/api/command-history", (req: Request, res: Response) => {
+    res.json(getCommandHistory());
+  });
+      } else if (mode === "ssh") {
+        // Legacy: direct command execution
         try {
           sshOutput = await sshClient.executeCommand(message);
         } catch (sshError) {
@@ -93,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get models status
-  app.get("/api/models", (req, res) => {
+  app.get("/api/models", (req: Request, res: Response) => {
     if (!orchestrator) {
       return res.json([]);
     }
@@ -153,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get SSH status
-  app.get("/api/ssh/status", (req, res) => {
+  app.get("/api/ssh/status", (req: Request, res: Response) => {
     const status = {
       connected: sshClient.isConnected(),
       host: "t-shell",
@@ -166,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reconnect SSH
-  app.post("/api/ssh/reconnect", async (req, res) => {
+  app.post("/api/ssh/reconnect", async (req: Request, res: Response) => {
     try {
       await sshClient.connect();
       res.json({ success: true });
